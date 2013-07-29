@@ -604,7 +604,7 @@ function $CompileProvider($provide) {
           match,
           className,
           name, nName,
-          startName, endName, index;
+          startName, endName;
 
       switch(nodeType) {
         case 1: /* Element */
@@ -714,7 +714,7 @@ function $CompileProvider($provide) {
                 throw $compileMinErr('utrel', "Unterminated element, found '{0}' but no matching '{1}' found.", nameStart, nameEnd);
               }
               if (node.nodeType == 1 /** Element **/) {
-                name = nodeName_(node).toLowerCase()
+                name = nodeName_(node).toLowerCase();
                 if (name == nameStart) depth++;
                 if (name == nameEnd) depth--;
               }
@@ -863,7 +863,7 @@ function $CompileProvider($provide) {
           transcludeDirective = directive;
           terminalPriority = directive.priority;
           if (directiveValue == 'element') {
-            $template = groupScan(compileNode, nameStart, nameEnd, directive.$$location)
+            $template = groupScan(compileNode, nameStart, nameEnd, directive.$$location);
             $compileNode = templateAttrs.$$element =
                 jqLite(document.createComment(' ' + directiveName + ': ' + templateAttrs[directiveName] + ' '));
             compileNode = $compileNode[0];
