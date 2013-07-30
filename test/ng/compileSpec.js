@@ -3133,6 +3133,135 @@ describe('$compile', function() {
 
 
   describe('multi-element directive', function() {
+
+    function outerHTML($nodes) {
+      var html = "", parent, object, out;
+      if ($nodes.length) {
+        if ($nodes[0].outerHTML) {
+          forEach($nodes, function (node) {
+            html += node.outerHTML;
+          });
+        } else {
+          parent = jqLite("<div></div>");
+          forEach($nodes, function (node) {
+            parent.append(node.cloneNode(true));
+          });
+          html = parent.html();
+        }
+      }
+      return html;
+    }
+
+    describe('should group elements and pass them correctly to directives', function () {
+      var compileEl, linkEl;
+      beforeEach(module(function($compileProvider) {
+        compileEl = linkEl = undefined;
+        $compileProvider.directive('foo', valueFn({
+          restrict: 'ECMA',
+          compile: function (_compileEl) {
+            compileEl = _compileEl;
+            return function (scope, _linkEl) {
+              linkEl = _linkEl;
+            }
+          }
+        }));
+      }));
+
+      //element, attributes, classes and comments
+      it('if the X-start/X-end are declared as attributes', inject(function ($compile, $rootScope) {
+        $rootScope.test = "middle";
+        element = $compile(
+          '<div>' +
+            '<span foo-start></span>' +
+            '<span>{{ test }}</span>' +
+            '<span foo-end></span>'+
+            '</div>'
+        )($rootScope);
+
+        expect(outerHTML(compileEl)).toEqual(
+          '<span foo-start=""></span>' +
+            '<span class="ng-binding">{{ test }}</span>' +
+            '<span foo-end=""></span>');
+        $rootScope.$digest();
+        expect(outerHTML(linkEl)).toEqual(
+          '<span foo-start=""></span>' +
+            '<span class="ng-binding">middle</span>' +
+            '<span foo-end=""></span>');
+      }));
+
+      it('if the X-start/X-end are declared as comments', inject(function ($compile, $rootScope) {
+        $rootScope.test = "middle";
+        element = $compile(
+          '<div>' +
+            '<!-- directive: foo-start -->' +
+            '<span>{{ test }}1</span>' +
+            '<span>{{ test }}2</span>' +
+            '<!-- foo-end -->' +
+            '</div>'
+        )($rootScope);
+
+        expect(outerHTML(compileEl)).toEqual(
+          '<!-- directive: foo-start -->' +
+            '<span class="ng-binding">{{ test }}1</span>' +
+            '<span class="ng-binding">{{ test }}2</span>' +
+            '<!-- foo-end -->');
+        $rootScope.$digest();
+        expect(outerHTML(linkEl)).toEqual(
+          '<!-- directive: foo-start -->' +
+            '<span class="ng-binding">middle1</span>' +
+            '<span class="ng-binding">middle2</span>' +
+            '<!-- foo-end -->');
+      }));
+
+      it('if the X-start/X-end are declared as classes', inject(function ($compile, $rootScope) {
+        $rootScope.test = "middle";
+        element = $compile(
+          '<div>' +
+            '<span class="foo-start"></span>' +
+            '<span>{{ test }}</span>' +
+            '<span class="foo-end"></span>'+
+            '</div>'
+        )($rootScope);
+
+        expect(outerHTML(compileEl)).toEqual(
+          '<span class="foo-start"></span>' +
+            '<span class="ng-binding">{{ test }}</span>' +
+            '<span class="foo-end"></span>');
+        $rootScope.$digest();
+        expect(outerHTML(linkEl)).toEqual(
+          '<span class="foo-start"></span>' +
+            '<span class="ng-binding">middle</span>' +
+            '<span class="foo-end"></span>');
+      }));
+
+
+      it('if the X-start/X-end are declared as elements', inject(function ($compile, $rootScope) {
+        $rootScope.test = "middle";
+        element = $compile(
+          '<div>' +
+            '<foo-start></foo-start>' +
+            '<span>{{ test }}</span>' +
+            '<foo-end></foo-end>'+
+            '</div>'
+        )($rootScope);
+
+        expect(outerHTML(compileEl)).toEqual(
+          '<foo-start></foo-start>' +
+            '<span class="ng-binding">{{ test }}</span>' +
+            '<foo-end></foo-end>');
+        $rootScope.$digest();
+        expect(outerHTML(linkEl)).toEqual(
+          '<foo-start></foo-start>' +
+            '<span class="ng-binding">middle</span>' +
+            '<foo-end></foo-end>');
+      }));
+
+
+
+
+
+    });
+
     it('should group on link function', inject(function($compile, $rootScope) {
       $rootScope.show = false;
       element = $compile(
@@ -3217,36 +3346,30 @@ describe('$compile', function() {
 
     it('should throw error if unterminated', function () {
       module(function($compileProvider) {
-        $compileProvider.directive('foo', function() {
-          return {
-          };
-        });
+        $compileProvider.directive('foo', valueFn({restrict: 'ECMA'}));
       });
-      inject(function($compile, $rootScope) {
-        expect(function() {
-          element = $compile(
-              '<div>' +
-                '<span foo-start></span>' +
-              '</div>');
-        }).toThrow("[$compile:utrat] Unterminated attribute, found 'foo-start' but no matching 'foo-end' found.");
-      });
-    });
+      inject(function($compile) {
+        forEach({
+          '<span foo-start></span>': ['attribute', 'at'],
+          '<foo-start></foo-start>': ['element', 'el'],
+          '<span class="foo-start"></span>': ['class', 'cl'],
+          '<!-- directive: foo-start -->': ['comment', 'cm'],
 
+          '<span foo-start><span foo-start></span></span>': ['attribute', 'at'],
+          '<foo-start><foo-start></foo-start></foo-start>': ['element', 'el'],
+          '<span class="foo-start"><span class="foo-start"></span></span>': ['class', 'cl'],
+          '<!-- directive: foo-start --><!-- directive: foo-start -->': ['comment', 'cm']
+        }, function (info, node) {
+          var style = info[0], short = info[1];
 
-    it('should throw error if unterminated', function () {
-      module(function($compileProvider) {
-        $compileProvider.directive('foo', function() {
-          return {
-          };
-        });
-      });
-      inject(function($compile, $rootScope) {
-        expect(function() {
-          element = $compile(
+          expect(function () {
+            element = $compile(
               '<div>' +
-                  '<span foo-start><span foo-end></span></span>' +
-              '</div>');
-        }).toThrow("[$compile:utrat] Unterminated attribute, found 'foo-start' but no matching 'foo-end' found.");
+                node +
+                '</div>');
+          }).toThrow("[$compile:utr" + short + "] Unterminated " + style + ", found 'foo-start' but no matching 'foo-end' found.")
+
+        });
       });
     });
 
@@ -3267,6 +3390,7 @@ describe('$compile', function() {
       expect(spans.eq(2)).toBeHidden();
       expect(spans.eq(3)).toBeHidden();
     }));
+
   });
 
   describe('$animate animation hooks', function() {
