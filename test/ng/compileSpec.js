@@ -3134,22 +3134,34 @@ describe('$compile', function() {
 
   describe('multi-element directive', function() {
 
-    function outerHTML($nodes) {
-      var html = "", parent, object, out;
-      if ($nodes.length) {
-        if ($nodes[0].outerHTML) {
-          forEach($nodes, function (node) {
-            html += node.outerHTML;
-          });
-        } else {
-          parent = jqLite("<div></div>");
-          forEach($nodes, function (node) {
-            parent.append(node.cloneNode(true));
-          });
-          html = parent.html();
-        }
-      }
-      return html;
+    function expectNodesToBe(nodes, description) {
+      expect(nodes.length).toBe(description.length);
+      forEach(nodes, function (node, i) {
+        forEach(description[i], function (value, key) {
+          switch (key) {
+            case "nodeType":
+              expect(node.nodeType).toBe(value);
+              break;
+            case "tagName":
+              expect(node.tagName.toLowerCase()).toBe(value);
+              break;
+            case "nodeValue":
+              expect(node.nodeValue).toBe(value);
+              break;
+            case "className":
+              expect(node.className).toBe(value);
+              break;
+            case "html":
+              expect(node.innerHTML).toBe(value);
+              break;
+            case "attr":
+              forEach(value, function (attrValue, attrName) {
+                expect(node.getAttribute(attrName)).toBe(attrValue);
+              });
+              break;
+          }
+        });
+      });
     }
 
     describe('should group elements and pass them correctly to directives', function () {
@@ -3178,15 +3190,16 @@ describe('$compile', function() {
             '</div>'
         )($rootScope);
 
-        expect(outerHTML(compileEl)).toEqual(
-          '<span foo-start=""></span>' +
-            '<span class="ng-binding">{{ test }}</span>' +
-            '<span foo-end=""></span>');
+        var expectedNodes = [
+            {tagName: "span", attr: {"foo-start": ""}, nodeType: 1},
+            {tagName: "span", html: "{{ test }}", nodeType: 1},
+            {tagName: "span", attr: {"foo-end": ""}, nodeType: 1}
+        ];
+
+        expectNodesToBe(compileEl, expectedNodes);
         $rootScope.$digest();
-        expect(outerHTML(linkEl)).toEqual(
-          '<span foo-start=""></span>' +
-            '<span class="ng-binding">middle</span>' +
-            '<span foo-end=""></span>');
+        expectedNodes[1].html = "middle";
+        expectNodesToBe(linkEl, expectedNodes);
       }));
 
       it('if the X-start/X-end are declared as comments', inject(function ($compile, $rootScope) {
@@ -3200,17 +3213,18 @@ describe('$compile', function() {
             '</div>'
         )($rootScope);
 
-        expect(outerHTML(compileEl)).toEqual(
-          '<!-- directive: foo-start -->' +
-            '<span class="ng-binding">{{ test }}1</span>' +
-            '<span class="ng-binding">{{ test }}2</span>' +
-            '<!-- foo-end -->');
+        var expectedNodes = [
+          {nodeValue: " directive: foo-start ", nodeType: 8},
+          {tagName: "span", html: "{{ test }}1", nodeType: 1},
+          {tagName: "span", html: "{{ test }}2", nodeType: 1},
+          {nodeValue: " foo-end ", nodeType: 8}
+        ];
+
+        expectNodesToBe(compileEl, expectedNodes);
         $rootScope.$digest();
-        expect(outerHTML(linkEl)).toEqual(
-          '<!-- directive: foo-start -->' +
-            '<span class="ng-binding">middle1</span>' +
-            '<span class="ng-binding">middle2</span>' +
-            '<!-- foo-end -->');
+        expectedNodes[1].html = "middle1";
+        expectedNodes[2].html = "middle2";
+        expectNodesToBe(compileEl, expectedNodes);
       }));
 
       it('if the X-start/X-end are declared as classes', inject(function ($compile, $rootScope) {
@@ -3223,42 +3237,43 @@ describe('$compile', function() {
             '</div>'
         )($rootScope);
 
-        expect(outerHTML(compileEl)).toEqual(
-          '<span class="foo-start"></span>' +
-            '<span class="ng-binding">{{ test }}</span>' +
-            '<span class="foo-end"></span>');
+        var expectedNodes = [
+          {tagName: "span", className: "foo-start", nodeType: 1},
+          {tagName: "span", html: "{{ test }}", nodeType: 1},
+          {tagName: "span", className: "foo-end", nodeType: 1}
+        ];
+
+        expectNodesToBe(compileEl, expectedNodes);
         $rootScope.$digest();
-        expect(outerHTML(linkEl)).toEqual(
-          '<span class="foo-start"></span>' +
-            '<span class="ng-binding">middle</span>' +
-            '<span class="foo-end"></span>');
+        expectedNodes[1].html = "middle";
+        expectNodesToBe(linkEl, expectedNodes);
       }));
 
 
       it('if the X-start/X-end are declared as elements', inject(function ($compile, $rootScope) {
+        // Creating elements using DOM methods allows us to avoid
+        // IE's HTML parser problems with custom tagNames
+        var div = document.createElement("div"),
+            span = document.createElement("span");
+        div.appendChild(document.createElement("foo-start")); // <foo-start></foo-start>
+        span.innerHTML = "{{ test }}";
+        div.appendChild(span); // <span>{{ test }}</span>
+        div.appendChild(document.createElement("foo-end")); // <foo-end></foo-end>
+
         $rootScope.test = "middle";
-        element = $compile(
-          '<div>' +
-            '<foo-start></foo-start>' +
-            '<span>{{ test }}</span>' +
-            '<foo-end></foo-end>'+
-            '</div>'
-        )($rootScope);
+        element = $compile(div)($rootScope);
 
-        expect(outerHTML(compileEl)).toEqual(
-          '<foo-start></foo-start>' +
-            '<span class="ng-binding">{{ test }}</span>' +
-            '<foo-end></foo-end>');
+        var expectedNodes = [
+          {tagName: "foo-start", nodeType: 1},
+          {tagName: "span", html: "{{ test }}", nodeType: 1},
+          {tagName: "foo-end", nodeType: 1}
+        ];
+
+        expectNodesToBe(compileEl, expectedNodes);
         $rootScope.$digest();
-        expect(outerHTML(linkEl)).toEqual(
-          '<foo-start></foo-start>' +
-            '<span class="ng-binding">middle</span>' +
-            '<foo-end></foo-end>');
+        expectedNodes[1].html = "middle";
+        expectNodesToBe(linkEl, expectedNodes);
       }));
-
-
-
-
 
     });
 
