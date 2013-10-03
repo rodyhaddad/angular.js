@@ -1711,6 +1711,30 @@ describe('$compile', function() {
         expect(element.text()).toBe('AHOJ|ahoj|AHOJ');
       });
     });
+
+    it('should work with a directive that transcludes the element', inject(function ($rootScope, $compile) {
+      directive('transcludeEl', function () {
+        return {
+          transclude: 'element',
+          compile: function (commentNode, attr, transclude) {
+            return function (scope) {
+              transclude(scope, function (el) { element = el });
+            }
+          }
+        }
+      });
+
+      $compile('<div transclude-el name="attr: {{name}}"></div>')($rootScope);
+
+      $rootScope.name = 'angular';
+      $rootScope.$digest();
+      expect(element.attr('name')).toEqual('attr: angular');
+
+      $rootScope.name = 'loves tests';
+      $rootScope.$digest();
+      expect(element.attr('name')).toEqual('attr: loves tests');
+    }));
+
   });
 
 

@@ -1287,7 +1287,7 @@ function $CompileProvider($provide) {
       var interpolateFn = $interpolate(text, true);
       if (interpolateFn) {
         directives.push({
-          priority: 0,
+          priority: -1,
           compile: valueFn(function textInterpolateLinkFn(scope, node) {
             var parent = node.parent(),
                 bindings = parent.data('$binding') || [];
@@ -1325,7 +1325,7 @@ function $CompileProvider($provide) {
       }
 
       directives.push({
-        priority: 100,
+        priority: -1,
         compile: valueFn(function attrInterpolateLinkFn(scope, element, attr) {
           var $$observers = (attr.$$observers || (attr.$$observers = {}));
 
