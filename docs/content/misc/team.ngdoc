@@ -1,0 +1,94 @@
+@ngdoc overview
+@name The Team
+@description
+
+<style>
+.team-container {
+    margin-top: 25px;
+}
+
+.team-container:after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+.team-container .team-member {
+    text-align: center;
+    display: inline-block;
+    color: #333;
+    width: 215px;
+    float: left;
+}
+
+.team-container .team-member .team-member-image {
+    border: 5px solid #D43;
+    line-height: 0;
+    border-radius: 50%;
+    width: 175px;
+    height: 175px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.team-container .team-member .team-member-image img {
+    width: 100%;
+    height: 100%;
+}
+
+.team-container .team-member:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+.team-container .team-member:hover .team-member-image {
+    border-color: #FB0;
+}
+</style>
+
+# The Team
+
+## The Angular Team
+
+<div class="team-container" ng-init="
+    team = [{name: 'Miško Hevery', img: 'img/team/misko-hevery.jpg', url: 'https://twitter.com/mhevery'},
+    {name: 'Brad Green', img: 'img/team/brad-green.jpg', url: 'https://twitter.com/bradlygreen'},
+    {name: 'Igor Minar', img: 'img/team/igor-minar.jpg', url: 'https://twitter.com/IgorMinar'},
+    {name: 'Vojta Jína', img: 'img/team/vojta-jina.jpg', url: 'https://twitter.com/vojtajina'},
+    {name: 'Brian Ford', img: 'img/team/brian-ford.jpg', url: 'https://twitter.com/briantford'},
+    {name: 'Naomi Black', img: 'img/team/naomi-black.jpg', url: 'https://plus.google.com/+NaomiBlack'},
+    {name: 'James DeBoer', img: 'img/team/james-deboer.jpg', url: 'https://twitter.com/jbdeboer'},
+    {name: 'Julie Ralph', img: 'img/team/julie-ralph.jpg', url: 'https://twitter.com/SomeJulie'},
+    {name: 'Peter Bacon Darwin', img: 'img/team/peter-bacon-darwin.jpg', url: 'https://twitter.com/petebd'},
+    {name: 'Matias Niemelä', img: 'img/team/matias-niemele.jpg', url: 'https://twitter.com/yearofmoo'},
+    {name: 'Chirayuk Krishnappa', img: 'img/team/chirayuk-krishnappa.jpg', url: 'https://twitter.com/chirayuk'},
+    {name: 'Jeff Cross', img: 'img/team/jeff-cross.jpg', url: 'https://twitter.com/jeffbcross'},
+    {name: 'Tobias Bosch', img: 'img/team/tobias-bosch.jpg', url: 'https://twitter.com/tbosch1009'},
+    {name: 'Caitlin Potter', img: 'img/team/caitlin-potter.jpg', url: 'https://github.com/caitp'},
+    {name: 'Pavel Jbanov', img: 'img/team/pavel-jbanov.jpg', url: 'https://github.com/pavelgj'},
+    {name: 'Mary Poppins (Bot)', img: 'img/team/marry-poppins.jpg', url: 'https://github.com/mary-poppins'}]
+
+">
+    <a ng-repeat="member in team" class="team-member" href="{{ member.url }}" target="_blank">
+        <div class="team-member-image"><img ng-src="{{ member.img }}"></div>
+        <p>{{ member.name }}</p>
+    </a>
+</div>
+
+
+## The Working Group
+
+<div class="team-container" ng-init="
+    workingGroup = [{name: 'Dave Geddes', img: 'img/team/dave-geddes.jpg', url: 'https://twitter.com/geddski'},
+    {name: 'Michał Gołębiowski', img: 'img/team/michal-golebiowski.jpg', url: 'https://twitter.com/m_gol'},
+    {name: 'Karl Seamon', img: 'img/team/karl-seamon.jpg', url: 'https://plus.google.com/110763473937793578252'},
+    {name: 'Ari Lerner', img: 'img/team/ari-lerner.jpg', url: 'https://twitter.com/auser'},
+    {name: 'Martin Probst', img: 'img/team/martin-probst.jpg', url: 'https://twitter.com/martin_probst'},
+    {name: 'Lucas Galfaso', img: 'img/team/lucas-galfaso.jpg', url: 'https://github.com/lgalfaso'}]
+
+">
+    <a ng-repeat="member in workingGroup" class="team-member" href="{{ member.url }}" target="_blank">
+        <div class="team-member-image"><img ng-src="{{ member.img }}"></div>
+        <p>{{ member.name }}</p>
+    </a>
+</div>
