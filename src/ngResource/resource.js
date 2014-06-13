@@ -360,7 +360,8 @@ angular.module('ngResource', ['ng']).
         forEach = angular.forEach,
         extend = angular.extend,
         copy = angular.copy,
-        isFunction = angular.isFunction;
+        isFunction = angular.isFunction,
+        isObject = angular.isObject;
 
       /**
        * We need our custom method because encodeURIComponent is too aggressive and doesn't follow
@@ -580,7 +581,7 @@ angular.module('ngResource', ['ng']).
                 if (action.isArray) {
                   value.length = 0;
                   forEach(data, function (item) {
-                    if (typeof item === "object") {
+                    if (isObject(item)) {
                       value.push(new Resource(item));
                     } else {
                       // Valid JSON values may be string literals, and these should not be converted

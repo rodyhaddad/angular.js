@@ -1134,6 +1134,13 @@ describe("resource", function() {
         $httpBackend.flush();
         expect(bools).toEqualData([true, false]);
       });
+
+      it('should not convert null values in array into Resource objects', function() {
+        $httpBackend.expect('GET', '/names.json').respond([null, null]);
+        var bools = $resource('/names.json').query();
+        $httpBackend.flush();
+        expect(bools).toEqualData([null, null]);
+      });
     });
 
     describe('get', function(){
