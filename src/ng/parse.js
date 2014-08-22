@@ -1014,7 +1014,7 @@ function $ParseProvider() {
         interpolationRegexp = new RegExp($injector.get('$interpolate').startSymbol());
       }
       return interpolationRegexp.test(text);
-    }
+    };
 
     return function $parse(exp, interceptorFn) {
       var parsedExpression, oneTime, cacheKey;

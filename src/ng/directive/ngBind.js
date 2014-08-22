@@ -182,14 +182,16 @@ var ngBindHtmlDirective = ['$sce', '$parse', function($sce, $parse) {
   return {
     restrict: 'A',
     compile: function ngBindCompile(tElement, tAttrs) {
+      console.log(tAttrs.ngBindHtml);
+      var ngBindHtmlGetter = $parse(tAttrs.ngBindHtml);
+      var ngBindHtmlWatch = $parse(tAttrs.ngBindHtml, function getStringValue(value) {
+        return (value || '').toString();
+      });
+
       tElement.addClass('ng-binding');
 
       return function ngBindLink(scope, element, attr) {
         element.data('$binding', attr.ngBindHtml);
-        var ngBindHtmlGetter = $parse(attr.ngBindHtml);
-        var ngBindHtmlWatch = $parse(attr.ngBindHtml, function getStringValue(value) {
-          return (value || '').toString();
-        });
 
         scope.$watch(ngBindHtmlWatch, function ngBindHtmlWatchAction() {
           // we re-evaluate the expr because we want a TrustedValueHolderType
