@@ -219,8 +219,8 @@ Lexer.prototype = {
     var colStr = (isDefined(start)
             ? 's ' + start +  '-' + this.index + ' [' + this.text.substring(start, end) + ']'
             : ' ' + end);
-    throw $parseMinErr('lexerr', 'Lexer Error: {0} at column{1} in expression [{2}].',
-        error, colStr, this.text);
+    throw $parseMinErr('lexerr', 'Lexer Error: {0} at column{1} in expression [{2}]. Interpolation detected: {3}',
+                error, colStr, this.text, this.options.interpolationCheck(this.text));
   },
 
   readNumber: function() {
@@ -450,13 +450,15 @@ Parser.prototype = {
 
   throwError: function(msg, token) {
     throw $parseMinErr('syntax',
-        'Syntax Error: Token \'{0}\' {1} at column {2} of the expression [{3}] starting at [{4}].',
-          token.text, msg, (token.index + 1), this.text, this.text.substring(token.index));
+        'Syntax Error: Token \'{0}\' {1} at column {2} of the expression [{3}] starting at [{4}]. Interpolation detected: {5}',
+          token.text, msg, (token.index + 1), this.text, this.text.substring(token.index),
+          this.options.interpolationCheck(this.text));
   },
 
   peekToken: function() {
     if (this.tokens.length === 0)
-      throw $parseMinErr('ueoe', 'Unexpected end of expression: {0}', this.text);
+      throw $parseMinErr('ueoe', 'Unexpected end of expression: {0}. Interpolation detected: {1}',
+          this.text, this.options.interpolationCheck(this.text));
     return this.tokens[0];
   },
 
@@ -997,16 +999,25 @@ function $ParseProvider() {
   var cache = createMap();
 
   var $parseOptions = {
-    csp: false
+    csp: false,
+    interpolationCheck: noop
   };
 
 
-  this.$get = ['$filter', '$sniffer', function($filter, $sniffer) {
+  this.$get = ['$filter', '$sniffer', '$injector', function($filter, $sniffer, $injector) {
     $parseOptions.csp = $sniffer.csp;
+
+    // avoiding circular dependency
+    var interpolationRegexp;
+    $parseOptions.interpolationCheck = function (text) {
+      if (!interpolationRegexp) {
+        interpolationRegexp = new RegExp($injector.get('$interpolate').startSymbol());
+      }
+      return interpolationRegexp.test(text);
+    }
 
     return function $parse(exp, interceptorFn) {
       var parsedExpression, oneTime, cacheKey;
-
       switch (typeof exp) {
         case 'string':
           cacheKey = exp = exp.trim();

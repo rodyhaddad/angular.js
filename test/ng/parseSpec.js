@@ -15,7 +15,7 @@ describe('parser', function() {
     beforeEach(function () {
       /* global Lexer: false */
       lex = function () {
-        var lexer = new Lexer({csp: false});
+        var lexer = new Lexer({csp: false, interpolationCheck: valueFn(false)});
         return lexer.lex.apply(lexer, arguments);
       };
     });
